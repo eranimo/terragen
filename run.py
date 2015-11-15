@@ -48,7 +48,7 @@ if __name__ == "__main__":
             else:
                 return ((cell - world['sea_level']) / (world['max_height'] - world['sea_level'])) * 100
 
-        def terrain_color_func(value):
+        def terrain_color_func(value, x, y):
             for min_value, color in TERRAIN:
                 if value <= min_value:
                     return color
@@ -56,6 +56,22 @@ if __name__ == "__main__":
 
         draw_image(heightmap, delta_sea_level_func, terrain_color_func, 'terrain', SIZE)
 
-    rivers = make_rivers(world)
 
-    print heightmap.dtype
+    rivers, world = make_rivers(world)
+    with Timer('Drawing rivers'):
+        def delta_sea_level_func(cell):
+            if cell < world['sea_level']:
+                return -(100 - (cell / world['sea_level']) * 100)
+            else:
+                return ((cell - world['sea_level']) / (world['max_height'] - world['sea_level'])) * 100
+
+        def terrain_color_func(value, x, y):
+            if world['river_array'][x, y]:
+                return (0, 0, 255)
+            for min_value, color in TERRAIN:
+                if value <= min_value:
+                    return color
+            return color
+
+        draw_image(heightmap, delta_sea_level_func, terrain_color_func, 'rivers', SIZE)
+    print(np.transpose(np.nonzero(world['river_array'])))
