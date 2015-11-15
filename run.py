@@ -1,13 +1,15 @@
 import numpy as np
+import random
 from terragen.terrain import make_terrain
-from terragen.utils import Timer, log
+from terragen.utils import Timer, log, elevation_at_percent_surface
 from terragen.constants import TERRAIN
 from terragen.draw import draw_image
+from terragen.rivers import make_rivers
 from PIL import Image
 
 if __name__ == "__main__":
 
-    SIZE = 2**10 + 1
+    SIZE = 2**9 + 1
 
     img = Image.new( 'RGB', (SIZE, SIZE), "black") # create a new black image
     terrain_image = img.load() # create the pixel map
@@ -21,24 +23,30 @@ if __name__ == "__main__":
         heightmap = make_terrain(terrain_image, size=SIZE)
         img.save('images/heightmap.png')
 
-    min_height = np.min(heightmap)
-    max_height = np.max(heightmap)
-    avg_height = np.average(heightmap)
+    world = dict(size=SIZE,
+                 heightmap=heightmap,
+                 min_height=np.min(heightmap),
+                 max_height=np.max(heightmap),
+                 avg_height=np.average(heightmap))
     log("Min height: %i\n"
-          "Max height: %i\n"
-          "Avg height: %i" % (min_height, max_height, avg_height))
+        "Max height: %i\n"
+        "Avg height: %i" % (world['min_height'], world['max_height'], world['avg_height']))
 
     # decide the sea level
-    sea_level = avg_height + 10
+    sea_level_percent = random.randint(50, 70)
+    world['sea_level'] = elevation_at_percent_surface(world, sea_level_percent)
+
+    log('Sea level: %i%%' % (sea_level_percent))
+
 
     # TERRAIN IMAGE
     with Timer('Making terrain image'):
 
         def delta_sea_level_func(cell):
-            if cell < sea_level:
-                return -(100 - (cell / sea_level) * 100)
+            if cell < world['sea_level']:
+                return -(100 - (cell / world['sea_level']) * 100)
             else:
-                return ((cell - sea_level) / (max_height - sea_level)) * 100
+                return ((cell - world['sea_level']) / (world['max_height'] - world['sea_level'])) * 100
 
         def terrain_color_func(value):
             for min_value, color in TERRAIN:
@@ -47,3 +55,7 @@ if __name__ == "__main__":
             return color
 
         draw_image(heightmap, delta_sea_level_func, terrain_color_func, 'terrain', SIZE)
+
+    rivers = make_rivers(world)
+
+    print heightmap.dtype

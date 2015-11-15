@@ -1,9 +1,26 @@
-# Computer Graphics Project
+# Terragen
+Computer Graphics Project
 Kaelan Cooter
 
 # Features
 ## Random terrain
-Using the diamond-square algorithm to achieve realistic terrain features. Terrain wraps horizontally and vertically such that a representation of a globe can be approximated. Due to the chosen algorithm, images are always square.
+Using the diamond-square algorithm to achieve realistic terrain features. Terrain wraps horizontally and vertically such that a representation of a globe can be approximated. Due to the chosen algorithm, images are always square. A sea level is chosen so that around 50-70% of the surface of the planet is covered in water.
+
+## Geographical Features
+The following features are detected using a flood fill algorithm:
+- Continents: large body of land
+- Oceans: large body of water
+- Islands: small bodies of land under 10% of land pixels
+- Inland Sea: surfaces below sea level surrounded by land
+
+The following features are generated:
+- Volcanoes: cone shaped mountains randomly placed on the land and water
+- Craters: impact basins
+
+Other features (planned):
+- Mountain Range: Areas inside land features with rough terrain
+- Plains: large areas of lower elevation
+- River Valley: Depression created by large rivers
 
 ## Rivers and Lakes
 Rivers start on mountains and flow towards sea level. As they flow, they increase in speed
@@ -136,7 +153,9 @@ while RiverSegment has next_segments:
         run make_delta()
 ```
 
-
-
-
 ## Moisture
+- Rivers produce a lot of moisture
+- coastlines some produce moisture
+
+## Temperature
+- based on latitude

@@ -23,3 +23,7 @@ class Timer:
               style.RESET + '] %s ' + \
               style.BOLD + '%.03f'+style.RESET + \
               ' seconds') % (current_time, (self.name+':').ljust(80), self.interval))
+
+
+def elevation_at_percent_surface(world, percent):
+    return round(world['avg_height'] * (percent * 2 / 100))
