@@ -153,6 +153,54 @@ while RiverSegment has next_segments:
         run make_delta()
 ```
 
+erosion = 1
+██░██
+█████
+
+erosion = 2
+█   █
+██░██
+█████
+
+erosion = 3
+█     █
+██   ██
+███░███
+███████
+```
+# River generation algorithm:
+determine randomly placed river sources
+for each river source:
+    active_segment = river source
+    while river can still be extended:
+        find lowest neighboring pixels
+        if lowest neighbor is >= active_segment:
+            perform flood fill algorithm here to fill lake
+            active_segment = lowest neighbor of lake
+        else if lowest neighbor is < active_segment:
+            active_segment = lowest_neighbor
+        mark active_segment as a river/lake
+# Erosion
+loop over each river:
+    loop over each river segment:
+        last_elevation = last river segment's elevation
+        last_speed = last river segment's speed
+        this_elevation = this river segment's elevation
+        last_erosion = last river segment's erosion
+        if river source:
+            this_speed = 0
+            this_erosion = 1
+        else:
+            this_speed = last_elevation - this_elevation
+            this_erosion = last_erosion + (last_speed - this_speed)
+        decrease elevation by this_erosion
+        decrease side pixels such that a pixel x pixel away is decreased by (this_erosion - x)
+        this will make a V pattern
+    if last river_segment is at sea_level:
+        deposit eroded sediments at mouth of river to form delta
+
+```
+
 ## Moisture
 - Rivers produce a lot of moisture
 - coastlines some produce moisture

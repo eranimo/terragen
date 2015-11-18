@@ -16,10 +16,10 @@ def make_space(width, height, height_func):
     space = numpy.zeros((width, height))
     top = height_func(0)
     bottom = height_func(0)
-    space[0, 0] = top
-    space[0, -1] = bottom
-    space[-1, 0] = top
-    space[-1, -1] = bottom
+    space[0, 0] = height_func(0)
+    space[0, -1] = height_func(0)
+    space[-1, 0] = height_func(0)
+    space[-1, -1] = height_func(0)
     return space
 
 def avg(*args):
