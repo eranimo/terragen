@@ -138,24 +138,24 @@ def make_rivers(world):
         current_elevation = get_elevation(current_location)
         can_continue = True
         while current_elevation >= world['sea_level'] and can_continue:
+
+
+            # get neighboring pixels
+            neighbors = find_neighbors(world['heightmap'],
+                                       current_location,
+                                       sort=True)[0]
+            # lowest neighbor is higher  than me
+            # if neighbors[0] > current_elevation):
+            #     # make a lake here
+            #     pass
+            next_segment = neighbors[1], neighbors[2]
             # Is there a river here?
-            if is_river(current_location):
+            if is_river(next_segment):
                 print('River found at %i, %i', current_location)
                 can_continue = False
-            else:
-
-                # get neighboring pixels
-                neighbors = find_neighbors(world['heightmap'],
-                                           current_location,
-                                           sort=True)[0]
-                # lowest neighbor is higher  than me
-                # if neighbors[0] > current_elevation):
-                #     # make a lake here
-                #     pass
-                next_segment = neighbors[1], neighbors[2]
-                make_river_segment(current_location)
-                current_location = next_segment
-                current_elevation = get_elevation(current_location)
+            make_river_segment(current_location)
+            current_location = next_segment
+            current_elevation = get_elevation(current_location)
 
         # river = River(world, source)
         # river.flow()

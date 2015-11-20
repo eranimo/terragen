@@ -1,10 +1,10 @@
 import numpy as np
 import random
 from terragen.terrain import make_terrain
-from terragen.utils import Timer, log, elevation_at_percent_surface, latitude_ratio
+from terragen.utils import Timer, log, elevation_at_percent_surface, latitude_ratio, randomize_color
 from terragen.constants import TERRAIN, TEMPERATURE
 from terragen.draw import draw_image
-from terragen.rivers import make_rivers
+from terragen.river2 import make_rivers
 from PIL import Image
 
 if __name__ == "__main__":
@@ -51,8 +51,8 @@ if __name__ == "__main__":
         def terrain_color_func(value, x, y):
             for min_value, color in TERRAIN:
                 if value <= min_value:
-                    return color
-            return color
+                    return randomize_color(color, dist=3)
+            return randomize_color(color, dist=3)
 
         draw_image(heightmap, delta_sea_level_func, terrain_color_func, 'terrain', SIZE)
 
@@ -105,21 +105,22 @@ if __name__ == "__main__":
 
         draw_image(temperature_map, temp_get_func, terrain_color_func, 'temp', SIZE)
 
-    # rivers, world = make_rivers(world)
-    # with Timer('Drawing rivers'):
-    #     def delta_sea_level_func(cell):
-    #         if cell < world['sea_level']:
-    #             return -(100 - (cell / world['sea_level']) * 100)
-    #         else:
-    #             return ((cell - world['sea_level']) / (world['max_height'] - world['sea_level'])) * 100
-    #
-    #     def terrain_color_func(value, x, y):
-    #         if world['river_array'][x, y]:
-    #             return (0, 0, 255)
-    #         for min_value, color in TERRAIN:
-    #             if value <= min_value:
-    #                 return color
-    #         return color
-    #
-    #     draw_image(heightmap, delta_sea_level_func, terrain_color_func, 'rivers', SIZE)
-    # print(np.transpose(np.nonzero(world['river_array'])))
+    with Timer('Making rivers'):
+        flowmap = make_rivers(world)
+
+    print(flowmap[10, 10])
+    min_flow = np.amin(flowmap)
+    max_flow = np.amax(flowmap)
+    print("max: %i, min: %i" % (max_flow, min_flow))
+    with Timer('Drawing rivers'):
+        def delta_sea_level_func(cell):
+            if cell == 0:
+                return -1
+            return min(int(cell), 255)
+
+        def terrain_color_func(value, x, y):
+            if value == -1:
+                return (100, 100, 100)
+            return (value / 6, value / 3, value)
+
+        draw_image(flowmap, delta_sea_level_func, terrain_color_func, 'flow', SIZE)

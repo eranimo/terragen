@@ -201,6 +201,24 @@ loop over each river:
 
 ```
 
+
+### New river algorithm
+Modeling fluid dynamics
+
+
+At every land pixel, drop a certain amount of water
+step:
+    for each land pixel:
+        move that water to the lowest neighboring pixel
+        each unit of water moved = 1 water flow
+        if there is no lowest neighboring pixel, keep raising the level to check for a neighboring land pixel until
+run 'step' a set number of times (world parameter?)
+land pixels with a certain amount of water flow are rivers
+
+analysis:
+will make short rivers that flow into larger rivers
+erosion can be modeled by the water flow
+
 ## Moisture
 - Rivers produce a lot of moisture
 - coastlines some produce moisture

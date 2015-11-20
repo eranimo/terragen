@@ -1,3 +1,4 @@
+import random
 import time
 import datetime
 from colored import fore, style
@@ -134,3 +135,24 @@ def latitude_ratio(size, x):
     else:
         ratio = (1 - ratio) / 0.5
     return ratio
+
+def limit(value):
+    if value > 255:
+        return 255
+    if value < 0:
+        return 0
+    return value
+
+def randomize_color(color, dist=1):
+    colors = [
+        color,
+        (limit(color[0] - dist), limit(color[1] - dist), limit(color[2] - dist)),
+        (limit(color[0] + dist), limit(color[1] + dist), limit(color[2] + dist)),
+        (limit(color[0] - dist), limit(color[1] + dist), limit(color[2] - dist)),
+        (limit(color[0] + dist), limit(color[1] - dist), limit(color[2] - dist)),
+        (limit(color[0] - dist), limit(color[1] + dist), limit(color[2] - dist)),
+        (limit(color[0] - dist), limit(color[1] - dist), limit(color[2] + dist)),
+        (limit(color[0] + dist), limit(color[1] - dist), limit(color[2] + dist)),
+        (limit(color[0] - dist), limit(color[1] + dist), limit(color[2] - dist))
+    ]
+    return random.choice(colors)
