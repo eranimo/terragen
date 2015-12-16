@@ -4,7 +4,7 @@ from terragen.terrain import make_terrain
 from terragen.utils import Timer, log, elevation_at_percent_surface, latitude_ratio, randomize_color
 from terragen.constants import TERRAIN, TEMPERATURE
 from terragen.draw import draw_image
-from terragen.rivers3 import make_rivers
+from terragen.rivers4 import make_rivers
 from PIL import Image
 
 if __name__ == "__main__":
