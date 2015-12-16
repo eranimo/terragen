@@ -49,8 +49,8 @@ if __name__ == "__main__":
                 return ((cell - world['sea_level']) / (world['max_height'] - world['sea_level'])) * 100
 
         def terrain_color_func(value, x, y):
-            for min_value, color in TERRAIN:
-                if value <= min_value:
+            for min_value, color in reversed(TERRAIN):
+                if value > min_value:
                     return randomize_color(color, dist=3)
             return randomize_color(color, dist=3)
 
@@ -106,21 +106,53 @@ if __name__ == "__main__":
         draw_image(temperature_map, temp_get_func, terrain_color_func, 'temp', SIZE)
 
     with Timer('Making rivers'):
-        flowmap = make_rivers(world)
+        rain_flow, water_level, water_amount = make_rivers(world)
 
-    print(flowmap[10, 10])
-    min_flow = np.amin(flowmap)
-    max_flow = np.amax(flowmap)
-    print("max: %i, min: %i" % (max_flow, min_flow))
-    with Timer('Drawing rivers'):
+    max_flow = np.amax(rain_flow)
+    with Timer('Drawing rain flow'):
+        def limit(v):
+            if v > 255:
+                return 255
+            if v < 0:
+                return 0
+            return v
+
         def delta_sea_level_func(cell):
-            if cell == 0:
-                return -1
-            return min(int(cell), 255)
+            return cell
 
         def terrain_color_func(value, x, y):
-            if value == -1:
+            if world['heightmap'][x, y] < world['sea_level']:
                 return (100, 100, 100)
-            return (value / 6, value / 3, value)
+            return 0, 0, value
+            value = int(round((float(value) / float(max_flow)) * 255))
+            return (value / 5, value / 3, value)
 
-        draw_image(flowmap, delta_sea_level_func, terrain_color_func, 'flow', SIZE)
+        draw_image(rain_flow, delta_sea_level_func, terrain_color_func, 'flow', SIZE)
+
+    with Timer('Drawing water amount'):
+        def water_amount_func(cell):
+            return cell
+
+        def water_amount_color_func(value, x, y):
+            if world['heightmap'][x, y] < world['sea_level']:
+                return (100, 100, 100)
+            if value < 0:
+                return (0, 0, 0)
+            value = min(value, 255)
+            return (value, value, value)
+
+        draw_image(water_amount, water_amount_func, water_amount_color_func, 'water_amount', SIZE)
+
+    with Timer('Drawing water level'):
+        def water_level_func(cell):
+            return int(cell)
+
+        def water_level_color_func(value, x, y):
+            if world['heightmap'][x, y] < world['sea_level']:
+                return (0, 0, 0)
+            if world['heightmap'][x, y] == value:
+                return (100, 100, 100)
+            diff = (value - int(world['heightmap'][x, y])) * 50
+            return 0, 0, diff
+
+        draw_image(water_level, water_level_func, water_level_color_func, 'water_level', SIZE)

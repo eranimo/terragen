@@ -1,4 +1,7 @@
+build
 *.pyc
 .gitkeep
 .DS_Store
 env
+pypy
+numpy

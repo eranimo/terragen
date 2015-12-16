@@ -4,7 +4,6 @@ import datetime
 from colored import fore, style
 
 import numpy as np
-import scipy.ndimage as ndimage
 
 def log(string):
     string = string.replace('\n', '\n'.ljust(15, ' '))

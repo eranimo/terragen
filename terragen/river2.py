@@ -5,46 +5,64 @@ from terragen.utils import log, find_neighbors, cell_north, cell_east, cell_west
 
 def make_rivers(world):
     """ Make rivers """
+
+    heightmap = world['heightmap']
+    sea_level = world['sea_level']
+
     # a 2D array of values at each pixel representing the amount of water that has flowed through
     # this pixel into a neighbor
-    rainflow = np.zeros(world['heightmap'].shape, dtype=int)
+    rain_flow = np.zeros(world['heightmap'].shape, dtype=int)
 
     # a working array that represents the rain flow after a certain number of calls to flow()
-    waterlevel = np.zeros(world['heightmap'].shape, dtype=int)
+    water_amount = np.zeros(world['heightmap'].shape, dtype=int)
+
+    # an 2D array of 0 - 255 representing water level
+    water_level = np.copy(world['heightmap'])
 
     # an array of (x, y) coordinates of the nearest lowest neighbor
-    lowest_neighbors = np.empty(world['heightmap'].shape, dtype='int, int')
+    lowest_neighbors = np.zeros(world['heightmap'].shape, dtype='int, int, int')
 
-    x_, y_ = rainflow.shape
+    # a 2D array to make looking up land / water easier
+    is_land = np.zeros(world['heightmap'].shape, dtype=int)
+
+    # seed the map with initial rainfall
+    # TODO: make this not uniform. Maybe perlin noise?
+    x_, y_ = rain_flow.shape
     for x in xrange(x_):
         for y in xrange(y_):
             altitude = world['heightmap'][x, y]
-            if altitude > world['sea_level']:
-                rainflow[x, y] = 1
-                waterlevel[x, y] = 1
-                their_altitude, t_x, t_y = find_neighbors(world['heightmap'], (x, y), sort=True)[0]
-                if their_altitude < world['heightmap'][x, y]:
-                    lowest_neighbors[x, y] = (t_x, t_y)
+            if altitude > sea_level:
+                is_land[x, y] = 1
+                rain_flow[x, y] = 1
+                water_amount[x, y] = 1
+                lowest_neighbors[x, y] = find_neighbors(water_level, (x, y), sort=True)[0]
 
-    print(lowest_neighbors[10, 10])
 
-    def flow():
-        x_, y_ = rainflow.shape
+    def flow(count=1):
+        x_, y_ = rain_flow.shape
         for x in xrange(x_):
             for y in xrange(y_):
-                if waterlevel[x, y] != 0: # land pixels
+                if is_land[x, y] == 1:
                     # get the lowest neighbor
-                    n = lowest_neighbors[x, y]
+                    other_altitude, t_x, t_y = lowest_neighbors[x, y]
 
-                    # is the lowest neighbor less than me?
-                    if n:
-                        # move my water to the neighbor
-                        waterlevel[n[0], n[1]] += waterlevel[x, y]
-                        # rainflow[n[0], n[1]] += waterlevel[x, y]
-                        waterlevel[x, y] = 0
+                    # if the lowest neighbor is higher than me,
+                    # i'm in a depression. Raise the water level accordingly
 
-    for i in xrange(3):
-        print('Flow %i' % i)
-        flow()
+                    if other_altitude >= water_level[x, y]:
+                        # update the water level to the lowest neighbor
+                        water_level[x, y] = other_altitude + 1
 
-    return waterlevel
+                    if is_land[t_x, t_y]:
+                        water_amount[t_x, t_y] += water_amount[x, y]
+                        rain_flow[t_x, t_y] += water_amount[x, y]
+                    water_amount[x, y] = 0
+
+    for i in xrange(100):
+        flow(i)
+        print(np.sum(water_amount))
+
+    print(rain_flow)
+
+
+    return rain_flow, water_level, water_amount
