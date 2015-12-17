@@ -1,13 +1,12 @@
 from random import randint
 import numpy as np
+# import sys
+# sys.setrecursionlimit(10000)
 
-from terragen.utils import log, find_neighbors, cell_north, cell_east, cell_west, cell_south
-
-def r_change(i=1):
-    return random.randint(-i, i)
+from terragen.utils import log, find_neighbors, cell_north, cell_east, cell_west, cell_south, cell_random
 
 def make_rivers(world):
-    mountain_cutoff = world['max_height'] - 50
+    mountain_cutoff = world['sea_level'] + 40
     mountains = np.transpose(np.nonzero(world['heightmap'] >= mountain_cutoff))
     np.random.shuffle(mountains)
 
@@ -18,7 +17,7 @@ def make_rivers(world):
     log('Making %i rivers' % num_rivers)
     river_sources = mountains[:num_rivers]
 
-    river_grid = np.zeros(world['heightmap'].shape, dtype=np.bool)
+    river_grid = np.zeros(world['heightmap'].shape)
     water_level = np.copy(world['heightmap'])
 
     def make_lake(start_x, start_y, start_altitude):
@@ -29,41 +28,51 @@ def make_rivers(world):
         """
         # make a lake here
         # the lake has a level, which is how deep the lake is at its deepest
-        # perform flood fill for all neighboring pixels < altitude + level
-        # raising the water level of each flooded cell to be the target altitude
-        # returns the coordinates of the point where the lake spills over
+        # perform flood fill for all neighboring pixels < start_altitude + level
+        # check all cells around the outside of the lake if any of them are lower than the pixels
+        # inside the lake. IF one of them are, it's a spill and return it.
+        # if there are none, then raise the level
         level = 1
-        def step(x, y):
+        def step(x, y, last_altitude):
             this_altitude = world['heightmap'][x, y]
             log('\t\tFlood step %i, %i (%i)' % (x, y, this_altitude))
-            water_level[x, y] = start_altitude + level
 
-            if this_altitude + level > start_altitude:
-                # if the this_altitude + level is greater than start_altitude
-                log('\t\tFound a spill over at %i, %i (%i)' % (x, y, this_altitude))
-                return x, y
-            river_grid[x, y] = True
+            if river_grid[x, y] == 2:
+                # already checked this cell
+                return False
+
+            if this_altitude > start_altitude + level:
+                return False
+
+            # if this_altitude < last_altitude:
+            #     # spill over here
+            #     log('\t\tFound a spill over at %i, %i (%i)' % (x, y, this_altitude))
+            #     return x, y
+
+            # set this cell as a lake
+            river_grid[x, y] = 2
 
             # flood into neighbors
             # if any of their recursive chains finds a spill over,
             # return it immediately and celebrate
+
+            west = cell_north(world['heightmap'], x, y)
+            r_w = step(west[1], west[2], this_altitude)
+            if r_w:
+                return r_w
+
+            east = cell_north(world['heightmap'], x, y)
+            r_w = step(east[1], east[2], this_altitude)
+            if r_w:
+                return r_w
+
+            south = cell_north(world['heightmap'], x, y)
+            r_w = step(south[1], south[2], this_altitude)
+            if r_w:
+                return r_w
+
             north = cell_north(world['heightmap'], x, y)
-            r_n = step(north[1], north[2])
-            if r_n:
-                return r_n
-
-            south = cell_south(world['heightmap'], x, y)
-            r_s = step(south[1], south[2])
-            if r_s:
-                return r_s
-
-            east = cell_east(world['heightmap'], x, y)
-            r_e = step(east[1], east[2])
-            if r_e:
-                return r_e
-
-            west = cell_west(world['heightmap'], x, y)
-            r_w = step(west[1], west[2])
+            r_w = step(north[1], north[2], this_altitude)
             if r_w:
                 return r_w
 
@@ -73,7 +82,7 @@ def make_rivers(world):
         rising = True
         while rising is True:
             log('\tLake level at %i' % level)
-            found = step(start_x, start_y)
+            found = step(start_x, start_y, start_altitude)
             if found is not False:
                 return found
             else:
@@ -86,25 +95,27 @@ def make_rivers(world):
         nearby = [i for i in nearby if i[0] < altitude]
         nearby = [i for i in nearby if not river_grid[i[1], i[2]]]
 
-        if size > 800:
-            return
 
-        river_grid[x, y] = True
+        river_grid[x, y] = 1
         if not nearby:
             # found a depression
             # make a lake here
             log('Flood fill at %i, %i (%i)' % (x, y, altitude))
             lake_exit = make_lake(x, y, altitude)
+            if lake_exit is None or lake_exit is False:
+                return # give up
+            if lake_exit[0] == x and lake_exit[1] == y:
+                return
             log('Lake exit found at %i, %i' % lake_exit)
-            if lake_exit[0] == x or lake_exit[1] == y:
-                raise Exception("Lake algorithm didn't work")
             next_segment(size + 1, lake_exit[0], lake_exit[1])
         else:
             next_segment(size + 1, nearby[0][1], nearby[0][2])
 
 
     for x, y in river_sources:
-        next_segment(0, x, y)
+        if x >= 0 and y >= 0 and x < world['size'] and y < world['size']:
+            log('Starting a river at %i, %i' % (x, y))
+            next_segment(0, x, y)
 
 
     return river_grid

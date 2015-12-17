@@ -62,7 +62,10 @@ def cell_north_west(array, x, y):
             return array[x, y], x, y
         else:
             return array[x, size - 1 - y + 1], x, size - 1 - y + 1
-    return array[x-1, y-1], x - 1, y - 1
+    if y == 0:
+        return array[x-1, size - 1], x - 1, size - 1
+    else:
+        return array[x-1, y-1], x - 1, y - 1
 
 def cell_north_east(array, x, y):
     size = len(array)
@@ -96,6 +99,19 @@ def cell_south_east(array, x, y):
         return array[x+1, 0], x + 1, 0
     else:
         return array[x+1, y+1], x + 1, y + 1
+
+def cell_random(array, x, y):
+    locs = [
+        lambda: cell_north(array, x, y),
+        lambda: cell_south(array, x, y),
+        lambda: cell_east(array, x, y),
+        lambda: cell_west(array, x, y),
+        lambda: cell_north_east(array, x, y),
+        lambda: cell_north_west(array, x, y),
+        lambda: cell_south_east(array, x, y),
+        lambda: cell_south_west(array, x, y)
+    ]
+    return random.choice(locs)()
 
 def find_neighbors(array, location, radius=1, sort=False):
     """

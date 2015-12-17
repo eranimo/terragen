@@ -14,8 +14,6 @@ def make_space(width, height, height_func):
     since they wrap around.
     """
     space = numpy.zeros((width, height))
-    top = height_func(0)
-    bottom = height_func(0)
     space[0, 0] = height_func(0)
     space[0, -1] = height_func(0)
     space[-1, 0] = height_func(0)
@@ -161,3 +159,34 @@ def make_terrain(image, size=513):
             space[x, y] = h
 
     return space
+
+def make_groundwater(world):
+    """
+    Use the diamond-square algorithm to make groundwater
+    """
+    noise_func = random.uniform
+    noise_min = -1.0
+    noise_max = 1.0
+    height_func = create_random_func(noise_func, noise_min, noise_max)
+
+    # initialize the space with random values on the corners
+    space = make_space(world['size'], world['size'], height_func)
+
+    # square diamond steps
+    diamond_square(space, height_func)
+
+    # convert to 255 2D array for the heightmap image
+    c_min = min(space.flat)
+    c_max = max(space.flat)
+    x_, y_ = space.shape
+    for x in xrange(x_):
+        for y in xrange(y_):
+            if world['heightmap'][x, y] < world['sea_level']:
+                space[x, y] = 0
+            else:
+                h = int(round(((space[x, y] + abs(c_min)) / (abs(c_min) + c_max)) * 15))
+                if h < 5: # some land doesn't have groundwater
+                    h = 0
+                space[x, y] = h
+
+    return space.astype(int)

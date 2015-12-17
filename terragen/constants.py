@@ -75,3 +75,16 @@ TEMPERATURE = [
     (120,  (90, 0, 0)),
     (140,  (80, 0, 0))
 ]
+
+BIOMES = [
+    (0, "Tundra", (78, 138, 177)),
+    (1, "Boreal Forest", (90, 127, 101)),
+    (2, "Temperate Grassland", (166, 139, 117)),
+    (3, "Woodland", (147, 57, 59)),
+    (4, "Temperate Forest", (41, 74, 103)),
+    (5, "Temperate Rainforest", (62, 92, 124)),
+    (6, "Tropical Rainforest", (54, 93, 64)),
+    (7, "Tropical Forest Savanna", (140, 166, 35)),
+    (8, "Desert", (130, 80, 37)),
+    (9, "Arctic", (223, 223, 223)),
+]
