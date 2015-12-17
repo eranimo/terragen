@@ -70,7 +70,7 @@ def make_features(heightmap, size):
         for x in xrange(start_x, start_x + height - 1):
             k = 0
             for y in xrange(start_y, start_y + width - 1):
-                feature_map[x, y] = heightmap[x, y] + feature[j][k] * 2
+                feature_map[x, y] = heightmap[x, y] + feature[j][k]
                 feature_image[x, y] = True
                 k += 1
             j += 1

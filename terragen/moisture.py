@@ -19,10 +19,10 @@ def make_moisture(world):
         for y in xrange(y_):
             if world['river_grid'][x, y]:
                 around = closest_around(moisture_map, (x, y), 30)
-                around += 0.1
+                around += 0.01
 
                 around = closest_around(moisture_map, (x, y), 10)
-                around += 0.25
+                around += 0.05
 
     moisture_map = moisture_map.astype(int)
 

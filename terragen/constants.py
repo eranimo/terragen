@@ -3,6 +3,17 @@ from PIL import ImageColor
 def hsl2rgb(c):
     return ImageColor.getrgb(c)
 
+def L(n):
+    if n > 255:
+        return 255
+    if n < 0:
+        return 0
+    return n
+
+def lighten(c):
+    am = 15
+    return (L(c[0] + am), L(c[1] + am), L(c[2] + am))
+
 # http://jsfiddle.net/m4s3mq55/2/
 TERRAIN = [
     (-100, hsl2rgb('hsl(195, 80%, 15%)')),
@@ -27,6 +38,8 @@ TERRAIN = [
     (90, hsl2rgb('hsl(32,   50%, 80%)')),
     (100, hsl2rgb('hsl(32,  55%, 85%)'))
 ]
+
+RIVER_COLOR = hsl2rgb('hsl(195, 80%, 25%)')
 
 TEMPERATURE = [
     (-270, (110, 110, 90)),
@@ -77,14 +90,16 @@ TEMPERATURE = [
 ]
 
 BIOMES = [
-    (0, "Tundra", (78, 138, 177)),
-    (1, "Boreal Forest", (90, 127, 101)),
-    (2, "Temperate Grassland", (166, 139, 117)),
-    (3, "Woodland", (147, 57, 59)),
-    (4, "Temperate Forest", (41, 74, 103)),
-    (5, "Temperate Rainforest", (62, 92, 124)),
-    (6, "Tropical Rainforest", (54, 93, 64)),
-    (7, "Tropical Forest Savanna", (140, 166, 35)),
-    (8, "Desert", (130, 80, 37)),
-    (9, "Arctic", (223, 223, 223)),
+    (0, 'Arctic',                 (224, 224, 224), lighten((132, 152, 159))),
+    (1, 'Tundra',                 (114, 153, 128), lighten((52, 55, 44))),
+    (2, 'Alpine Tundra',          (97, 130, 106),  lighten((103, 91, 61))),
+    (3, 'Desert',                 (237, 217, 135), lighten((94, 78, 52))),
+    (4, 'Shrubland',              (194, 210, 136), lighten((58, 47, 21))),
+    (5, 'Savanna',                (219, 230, 158), lighten((66, 53, 28))),
+    (6, 'Grasslands',             (166, 223, 106), lighten((45, 46, 22))),
+    (7, 'Boreal Forest',          (28, 94, 74),    lighten((36, 41, 29))),
+    (8, 'Temperate Forest',       (76, 192, 0),    lighten((40, 37, 19))),
+    (9, 'Temperate Rainforest',  (89, 129, 89),    lighten((42, 38, 21))),
+    (10, 'Tropical Forest',       (96, 122, 34),   lighten((32, 39, 21))),
+    (11, 'Tropical Rainforest',   (0, 70, 0),      lighten((26, 33, 16)))
 ]
