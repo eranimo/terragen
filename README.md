@@ -1,6 +1,8 @@
 # Terragen
 A terrain generator written in Python
 
+![terrain](images/terrain.png)
+
 ## Instructions
 
 1. Install PyPy
